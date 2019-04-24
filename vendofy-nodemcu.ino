@@ -1,8 +1,11 @@
+#include <SoftwareSerial.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
+
+SoftwareSerial ArduinoUno(D2,D3);
 
 const char* ssid = "Mancao";
 const char* password = "28DWIFI3F8";
@@ -10,9 +13,10 @@ const char* password = "28DWIFI3F8";
 WebSocketsServer webSocket = WebSocketsServer(81);
 ESP8266WebServer server(80);
 
-
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
+    ArduinoUno.begin(9600);
+
     WiFi.begin(ssid, password);
     Serial.println("");
 
@@ -47,10 +51,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
     if (type == WStype_DISCONNECTED) {
 
-        IPAddress ip = webSocket.remoteIP(num);
-        // format ip address
-        String clientIPAddress = (String)ip[0] + "." + (String)ip[1] + "." + (String)ip[2] + "." + (String)ip[3];
-        Serial.println("Disconnected: [" + (String)num + "][" + clientIPAddress + "]");
+        Serial.println("Disconnected: [" + (String)num + "]");
 
     } else if (type == WStype_CONNECTED) {
 
@@ -65,7 +66,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
     } else if (type == WStype_TEXT) {
 
         char data[length];
-        
+
         for(uint8_t i = 0; i < length; i++) data[i] = payload[i];
 
         data[length] = '\0';
@@ -75,6 +76,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
         serializeJsonPretty(doc, Serial);
 
+        serializeJson(doc, ArduinoUno);
         // send data to all connected clients
         // webSocket.broadcastTXT("message for all");
     }
