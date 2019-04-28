@@ -7,11 +7,11 @@
 
 SoftwareSerial ArduinoMega(D2,D3);
 
-const char* ssid = "HUAWEI-5YGK5W";
-const char* password = "e5475g380u";
+const char* ssid = "Mancao";
+const char* password = "28DWIFI3F8";
 
-IPAddress ip(192, 168, 3, 11); //set static ip
-IPAddress gateway(192, 168, 3, 1); //set getteway
+IPAddress ip(192, 168, 254, 100); //set static ip
+IPAddress gateway(192, 168, 254, 254); //set getteway
 IPAddress subnet(255, 255, 255, 0);//set subnet
 
 WebSocketsServer webSocket = WebSocketsServer(81);
@@ -47,9 +47,17 @@ void setup() {
     webSocket.begin();
     webSocket.onEvent(webSocketEvent);
 
+    pinMode(D4, OUTPUT);
 }
 
 void loop() {
+
+    if (WiFi.status() != WL_CONNECTED) {
+        digitalWrite(D4, HIGH);
+    } else {
+        digitalWrite(D4, LOW);
+    }
+
     webSocket.loop();
     server.handleClient();
 
