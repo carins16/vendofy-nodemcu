@@ -5,18 +5,25 @@
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
 
-SoftwareSerial ArduinoUno(D2,D3);
+SoftwareSerial ArduinoMega(D2,D3);
 
-const char* ssid = "Mancao";
-const char* password = "28DWIFI3F8";
+const char* ssid = "HUAWEI-5YGK5W";
+const char* password = "e5475g380u";
+
+IPAddress ip(192, 168, 3, 11); //set static ip
+IPAddress gateway(192, 168, 3, 1); //set getteway
+IPAddress subnet(255, 255, 255, 0);//set subnet
 
 WebSocketsServer webSocket = WebSocketsServer(81);
 ESP8266WebServer server(80);
 
+uint8_t clientID;
+
 void setup() {
     Serial.begin(9600);
-    ArduinoUno.begin(9600);
+    ArduinoMega.begin(9600);
 
+    WiFi.config(ip, gateway, subnet);
     WiFi.begin(ssid, password);
     Serial.println("");
 
@@ -45,6 +52,17 @@ void setup() {
 void loop() {
     webSocket.loop();
     server.handleClient();
+
+    if (ArduinoMega.available() > 0) {
+        DynamicJsonDocument doc(1024);
+        deserializeJson(doc, ArduinoMega);
+
+        String jsonStr;
+        serializeJsonPretty(doc, Serial);
+        serializeJson(doc, jsonStr);
+
+        webSocket.sendTXT(clientID, jsonStr);
+    }
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
@@ -55,12 +73,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
     } else if (type == WStype_CONNECTED) {
 
-        IPAddress ip = webSocket.remoteIP(num);
+        IPAddress clientIP = webSocket.remoteIP(num);
         // format ip address
-        String clientIPAddress = (String)ip[0] + "." + (String)ip[1] + "." + (String)ip[2] + "." + (String)ip[3];
+        String clientIPAddress = (String)clientIP[0] + "." + (String)clientIP[1] + "." + (String)clientIP[2] + "." + (String)clientIP[3];
         // send response to connected client
-        webSocket.sendTXT(num, clientIPAddress);
+        // webSocket.sendTXT(num, "message for you");
 
+        clientID = num;
         Serial.println("Connected: [" + (String)num + "][" + clientIPAddress + "]");
 
     } else if (type == WStype_TEXT) {
@@ -75,8 +94,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         deserializeJson(doc, data);
 
         serializeJsonPretty(doc, Serial);
-
-        serializeJson(doc, ArduinoUno);
+        serializeJson(doc, ArduinoMega);
         // send data to all connected clients
         // webSocket.broadcastTXT("message for all");
     }
