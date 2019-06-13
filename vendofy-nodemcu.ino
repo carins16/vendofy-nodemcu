@@ -7,11 +7,11 @@
 
 SoftwareSerial ArduinoMega(D2,D3);
 
-const char* ssid = "Mancao";
-const char* password = "28DWIFI3F8";
+const char* ssid = "VENDOFY";
+const char* password = "helloworld";
 
-IPAddress ip(192, 168, 254, 100); //set static ip
-IPAddress gateway(192, 168, 254, 254); //set getteway
+IPAddress ip(192, 168, 137, 100); //set static ip
+IPAddress gateway(192, 168, 137, 1); //set getteway
 IPAddress subnet(255, 255, 255, 0);//set subnet
 
 WebSocketsServer webSocket = WebSocketsServer(81);
